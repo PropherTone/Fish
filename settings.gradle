@@ -1,0 +1,69 @@
+pluginManagement {
+
+    enableFeaturePreview('VERSION_CATALOGS')
+
+    repositories {
+        gradlePluginPortal()
+        google()
+        mavenCentral()
+    }
+}
+
+dependencyResolutionManagement {
+
+    versionCatalogs {
+        libs {
+            version('compileSdk', '32')
+            version('minSdk', '24')
+            version('targetSdk', '32')
+            version('versionCode', '1')
+            version('versionName', '1.0')
+            version('testInstrumentationRunner', 'androidx.test.runner.AndroidJUnitRunner')
+
+            alias('ktx-core').to('androidx.core:core-ktx:1.8.0')
+            alias('appcompat').to('androidx.appcompat:appcompat:1.5.0')
+            alias('material').to('com.google.android.material:material:1.6.1')
+            bundle('baseLibs', ['ktx-core', 'appcompat', 'material'])
+
+            version('ktx', '2.5.1')
+            alias('viewmodel').to('androidx.lifecycle','lifecycle-viewmodel-ktx').versionRef('ktx')
+            alias('lifecycle-runtime-ktx').to('androidx.lifecycle','lifecycle-runtime-ktx').versionRef('ktx')
+            alias('fragment-ktx').to('androidx.fragment:fragment-ktx:1.5.4')
+            alias('constraintlayout').to('androidx.constraintlayout:constraintlayout:2.1.4')
+            bundle('componentLibs', ['viewmodel', 'lifecycle-runtime-ktx', 'fragment-ktx', 'constraintlayout'])
+
+            version('roomVersion', '2.3.0')
+            //JitPack的DataStore本地持久化库,替代SP
+            alias('datastore').to('androidx.datastore:datastore-preferences:1.0.0')
+            //ROOM数据库
+            alias('room-compiler').to('androidx.room', 'room-compiler').versionRef('roomVersion')
+            alias('room-ktx').to('androidx.room', 'room-ktx').versionRef('roomVersion')
+            alias('room-runtime').to('androidx.room', 'room-runtime').versionRef('roomVersion')
+            //捆绑ROOM的引用
+            bundle('roomLibs', ['room-ktx', 'room-runtime'])
+            //ROOM数据库浏览组件
+            alias('roomExplorer').to('com.wajahatkarim:roomexplorer:1.0.1')
+
+            alias('gson').to('com.google.code.gson:gson:2.8.8')
+
+            //Glide和Glide注解器
+            version('glideVersion', '4.12.0')
+            alias('glide').to('com.github.bumptech.glide', 'glide').versionRef('glideVersion')
+            alias('glide-compiler').to('com.github.bumptech.glide', 'compiler').versionRef('glideVersion')
+
+            //阿里路由框架
+            version('arouterVersion', '1.5.2')
+            alias('arouter-api').to('com.alibaba','arouter-api').versionRef('arouterVersion')
+            alias('arouter-compiler').to('com.alibaba','arouter-compiler').versionRef('arouterVersion')
+        }
+    }
+
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+rootProject.name = "Fish"
+include ':app'
+include ':lib_common'

@@ -1,0 +1,14 @@
+apply from:'../lib_build.gradle'
+
+dependencies {
+
+    implementation libs.gson
+
+    implementation libs.bundles.roomLibs
+
+    implementation libs.glide
+    kapt libs.glide.compiler
+
+    api libs.arouter.api
+
+}
