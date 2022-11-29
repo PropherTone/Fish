@@ -32,7 +32,7 @@ android {
         main {
             jniLibs.srcDirs = ['libs']
             if (isModule.toBoolean()) {
-                manifest.srcFile 'src/main/mainfest/AndroidManifest.xml'
+                manifest.srcFile 'src/main/manifest/AndroidManifest.xml'
             } else {
                 manifest.srcFile 'src/main/AndroidManifest.xml'
                 java {

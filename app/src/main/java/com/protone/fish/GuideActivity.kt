@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.alibaba.android.arouter.launcher.ARouter
 import com.protone.common.context.newLayoutInflater
+import com.protone.common.routerPath.NetRouterPath
 import com.protone.fish.databinding.ActivityGuideBinding
 import com.protone.fish.databinding.GuideItemBinding
 
@@ -25,6 +26,7 @@ class GuideActivity : AppCompatActivity() {
 
         guideList.apply {
             //添加模块入口Activity索引
+            add(Pair("Module Net", NetRouterPath.Main))
         }
 
         binding.enterList.apply {

@@ -67,3 +67,4 @@ dependencyResolutionManagement {
 rootProject.name = "Fish"
 include ':app'
 include ':lib_common'
+include ':fishModule_net'
