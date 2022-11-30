@@ -47,6 +47,8 @@ dependencies {
 
     if (!isModule.toBoolean()) {
         implementation project(path: ':fishModule_net')
+        implementation project(path: ':fishmodule_projectDesign')
+        implementation project(path: ':fishmodule_layout')
     }
 
     implementation 'androidx.appcompat:appcompat:1.3.0'

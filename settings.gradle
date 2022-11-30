@@ -68,3 +68,5 @@ rootProject.name = "Fish"
 include ':app'
 include ':lib_common'
 include ':fishModule_net'
+include ':fishmodule_projectDesign'
+include ':fishmodule_layout'

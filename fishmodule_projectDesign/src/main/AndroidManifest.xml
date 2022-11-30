@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.protone.projectDesign">
+
+    <application>
+        <activity
+            android:name=".arouter.DestinationBActivity"
+            android:exported="false" />
+        <activity
+            android:name=".arouter.DestinationAActivity"
+            android:exported="false" />
+        <activity android:name=".mvvm.activity.MVVMActivity" />
+    </application>
+
+</manifest>
