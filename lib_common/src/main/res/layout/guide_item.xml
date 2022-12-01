@@ -9,7 +9,7 @@
         android:id="@+id/guide_button"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:backgroundTint="@color/gray_1"
+        android:backgroundTint="@color/blue"
         android:insetTop="0dp"
         android:insetBottom="0dp"
         app:cornerRadius="8dp" />

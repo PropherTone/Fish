@@ -1,1 +1,8 @@
 apply from:'../module_build.gradle'
+
+dependencies {
+    implementation libs.gson
+    implementation libs.gson.converter
+    implementation libs.retrofit
+    implementation libs.okhttp
+}

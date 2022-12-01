@@ -3,35 +3,29 @@ package com.protone.common.baseType
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 
-inline fun CoroutineScope.launchDefault(crossinline func: suspend CoroutineScope.() -> Unit): Job =
-    launch(Dispatchers.Default) {
-        func.invoke(this)
-    }
+fun CoroutineScope.launchDefault(
+    start: CoroutineStart = CoroutineStart.DEFAULT,
+    block: suspend CoroutineScope.() -> Unit
+): Job = launch(Dispatchers.Default, start, block)
 
-inline fun CoroutineScope.launchIO(crossinline func: suspend CoroutineScope.() -> Unit) : Job =
-    launch(Dispatchers.IO) {
-        func.invoke(this)
-    }
+fun CoroutineScope.launchIO(
+    start: CoroutineStart = CoroutineStart.DEFAULT,
+    block: suspend CoroutineScope.() -> Unit
+): Job = launch(Dispatchers.IO, start, block)
 
-inline fun CoroutineScope.launchMain(crossinline func: suspend CoroutineScope.() -> Unit) : Job =
-    launch(Dispatchers.Main) {
-        func.invoke(this)
-    }
+fun CoroutineScope.launchMain(
+    start: CoroutineStart = CoroutineStart.DEFAULT,
+    block: suspend CoroutineScope.() -> Unit
+): Job = launch(Dispatchers.Main, start, block)
 
-suspend inline fun <T> withMainContext(crossinline func: suspend CoroutineScope.() -> T) =
-    withContext(Dispatchers.Main) {
-        func.invoke(this)
-    }
+suspend fun <T> withMainContext(block: suspend CoroutineScope.() -> T) =
+    withContext(Dispatchers.Main, block)
 
-suspend inline fun <T> withIOContext(crossinline func: suspend CoroutineScope.() -> T) =
-    withContext(Dispatchers.IO) {
-        func.invoke(this)
-    }
+suspend fun <T> withIOContext(block: suspend CoroutineScope.() -> T) =
+    withContext(Dispatchers.IO, block)
 
-suspend inline fun <T> withDefaultContext(crossinline func: suspend CoroutineScope.() -> T) =
-    withContext(Dispatchers.Default) {
-        func.invoke(this)
-    }
+suspend fun <T> withDefaultContext(block: suspend CoroutineScope.() -> T) =
+    withContext(Dispatchers.Default, block)
 
 @Suppress("ObjectLiteralToLambda")
 suspend inline fun <T> Flow<T>.bufferCollect(crossinline action: suspend (value: T) -> Unit) {

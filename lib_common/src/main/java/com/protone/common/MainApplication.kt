@@ -1,7 +1,14 @@
 package com.protone.common
 
+import android.app.Activity
 import android.app.Application
 import android.content.Context
+import android.graphics.ColorMatrix
+import android.graphics.ColorMatrixColorFilter
+import android.graphics.Paint
+import android.os.Bundle
+import android.view.View
+import androidx.core.view.drawToBitmap
 import com.alibaba.android.arouter.launcher.ARouter
 import com.protone.common.baseType.DPI
 import com.protone.common.context.MApplication
@@ -21,6 +28,36 @@ class MainApplication : Application() {
             ARouter.openDebug()
         }
         ARouter.init(MApplication.app)
+        registerActivityLifecycleCallbacks(object :ActivityLifecycleCallbacks{
+            override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
+                val view = activity.window.decorView
+                view.setLayerType(View.LAYER_TYPE_HARDWARE,Paint().apply {
+                    colorFilter = ColorMatrixColorFilter(ColorMatrix().also {
+                        it.setSaturation(0f)
+                    })
+                })
+                view.invalidate()
+            }
+
+            override fun onActivityStarted(activity: Activity) {
+            }
+
+            override fun onActivityResumed(activity: Activity) {
+            }
+
+            override fun onActivityPaused(activity: Activity) {
+            }
+
+            override fun onActivityStopped(activity: Activity) {
+            }
+
+            override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {
+            }
+
+            override fun onActivityDestroyed(activity: Activity) {
+            }
+
+        })
         DPI = MApplication.app.resources.displayMetrics.densityDpi
         val file = File("${base?.externalCacheDir?.path}/CrashLog")
         val result = if (!file.exists()) {

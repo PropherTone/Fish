@@ -7,7 +7,7 @@ import com.protone.common.R
 import com.protone.common.baseType.getString
 import com.protone.common.utils.json.toJson
 
-const val TAG = "MeTimeLogTAG"
+const val TAG = "FishLogTAG"
 
 const val ALL_MUSIC = "全部音乐"
 const val MUSIC_BUCKET = "MusicBucket"

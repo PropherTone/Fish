@@ -2,6 +2,7 @@ package com.protone.common.utils
 
 import android.content.pm.ApplicationInfo
 import android.os.Looper
+import android.util.Log
 import com.protone.common.R
 import com.protone.common.baseType.getString
 import com.protone.common.baseType.toast
@@ -9,6 +10,12 @@ import com.protone.common.context.MApplication
 import kotlinx.coroutines.*
 import java.text.SimpleDateFormat
 import java.util.*
+
+inline fun runWithTimeRecording(tag: String, block: () -> Unit) {
+    val start = System.currentTimeMillis()
+    block.invoke()
+    Log.d(TAG, "$tag running time: ${System.currentTimeMillis() - start}")
+}
 
 fun isInDebug(): Boolean {
     return try {
