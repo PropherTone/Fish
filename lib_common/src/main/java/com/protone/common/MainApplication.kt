@@ -28,36 +28,36 @@ class MainApplication : Application() {
             ARouter.openDebug()
         }
         ARouter.init(MApplication.app)
-        registerActivityLifecycleCallbacks(object :ActivityLifecycleCallbacks{
-            override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
-                val view = activity.window.decorView
-                view.setLayerType(View.LAYER_TYPE_HARDWARE,Paint().apply {
-                    colorFilter = ColorMatrixColorFilter(ColorMatrix().also {
-                        it.setSaturation(0f)
-                    })
-                })
-                view.invalidate()
-            }
-
-            override fun onActivityStarted(activity: Activity) {
-            }
-
-            override fun onActivityResumed(activity: Activity) {
-            }
-
-            override fun onActivityPaused(activity: Activity) {
-            }
-
-            override fun onActivityStopped(activity: Activity) {
-            }
-
-            override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {
-            }
-
-            override fun onActivityDestroyed(activity: Activity) {
-            }
-
-        })
+//        registerActivityLifecycleCallbacks(object :ActivityLifecycleCallbacks{
+//            override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
+//                val view = activity.window.decorView
+//                view.setLayerType(View.LAYER_TYPE_HARDWARE,Paint().apply {
+//                    colorFilter = ColorMatrixColorFilter(ColorMatrix().also {
+//                        it.setSaturation(0f)
+//                    })
+//                })
+//                view.invalidate()
+//            }
+//
+//            override fun onActivityStarted(activity: Activity) {
+//            }
+//
+//            override fun onActivityResumed(activity: Activity) {
+//            }
+//
+//            override fun onActivityPaused(activity: Activity) {
+//            }
+//
+//            override fun onActivityStopped(activity: Activity) {
+//            }
+//
+//            override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {
+//            }
+//
+//            override fun onActivityDestroyed(activity: Activity) {
+//            }
+//
+//        })
         DPI = MApplication.app.resources.displayMetrics.densityDpi
         val file = File("${base?.externalCacheDir?.path}/CrashLog")
         val result = if (!file.exists()) {

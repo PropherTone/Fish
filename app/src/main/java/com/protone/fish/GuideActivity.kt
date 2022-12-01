@@ -5,7 +5,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
 import com.alibaba.android.arouter.launcher.ARouter
 import com.protone.common.component.ModelTestListHelper
+import com.protone.common.context.checkNeededPermission
 import com.protone.common.context.newLayoutInflater
+import com.protone.common.context.requestContentPermission
 import com.protone.common.routerPath.CoroutineRouterPath
 import com.protone.common.routerPath.NetRouterPath
 import com.protone.common.routerPath.ProjectDesignRouterPath
@@ -20,6 +22,10 @@ class GuideActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
+        checkNeededPermission({
+            requestContentPermission()
+        }, {
+        })
         //添加模块入口Activity索引
         //first：显示名称  second：ARouter路由地址
         ModelTestListHelper<String>().add("Module Net", NetRouterPath.Main)
