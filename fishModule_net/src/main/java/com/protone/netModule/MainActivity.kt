@@ -75,11 +75,11 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
             .add("getImageByGlide", getImageByGlide())
             .add("getTextWithParamByURLConnection", getTextWithParamByURLConnection())
             .add("uploadFileByURLConnection", uploadFileByURLConnection())
-            .add("getTextByRetrofit", getTextByRetrofit())
             .add("getTextByOkHttp", getTextByOkHttp())
             .add("postCommentByOkHttp", postCommentByOkHttp())
             .add("postFileByOkHttp", postFileByOkHttp())
             .add("downloadFileByOkHttp", downloadFileByOkHttp())
+            .add("getTextByRetrofit", getTextByRetrofit())
             .init(
                 binding.requestList,
                 LinearLayoutManager(this@MainActivity, LinearLayoutManager.HORIZONTAL, false), 0
@@ -98,6 +98,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         val url = URL("$BASE_URL/get/text")
         val connection = url.openConnection() as HttpURLConnection
         connection.requestMethod = "GET"
+        connection.connectTimeout = 2000
         connection.connect()
         val responseCode = connection.responseCode
         val stream = connection.content as InputStream
@@ -203,7 +204,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         val newCall = client.newCall(request)
         newCall.enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
-
+                e.printStackTrace()
             }
 
             override fun onResponse(call: Call, response: Response) {
@@ -313,7 +314,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         val create = retrofitClient.create(Api::class.java)
         val response = create.getText()
         val code = response.code
-        val body = response.message
+        val body = response.data
         launchMain {
             binding.code.text = code.toString()
             binding.responseBody.text = body

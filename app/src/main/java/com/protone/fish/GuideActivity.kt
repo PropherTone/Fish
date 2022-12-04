@@ -32,6 +32,7 @@ class GuideActivity : AppCompatActivity() {
             .add("MVVM", ProjectDesignRouterPath.MVVM)
             .add("ARouterTest", ProjectDesignRouterPath.DestinationA)
             .add("CoroutineTest", CoroutineRouterPath.Coroutine)
+            .add("Login", NetRouterPath.Login)
             .init(binding.enterList, GridLayoutManager(this, 2), 12) {
                 ARouter.getInstance().build(it).navigation()
             }

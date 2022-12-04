@@ -26,8 +26,8 @@ dependencyResolutionManagement {
             bundle('baseLibs', ['ktx-core', 'appcompat', 'material'])
 
             version('ktx', '2.5.1')
-            alias('viewmodel').to('androidx.lifecycle','lifecycle-viewmodel-ktx').versionRef('ktx')
-            alias('lifecycle-runtime-ktx').to('androidx.lifecycle','lifecycle-runtime-ktx').versionRef('ktx')
+            alias('viewmodel').to('androidx.lifecycle', 'lifecycle-viewmodel-ktx').versionRef('ktx')
+            alias('lifecycle-runtime-ktx').to('androidx.lifecycle', 'lifecycle-runtime-ktx').versionRef('ktx')
             alias('fragment-ktx').to('androidx.fragment:fragment-ktx:1.5.4')
             alias('constraintlayout').to('androidx.constraintlayout:constraintlayout:2.1.4')
             bundle('componentLibs', ['viewmodel', 'lifecycle-runtime-ktx', 'fragment-ktx', 'constraintlayout'])
@@ -44,9 +44,9 @@ dependencyResolutionManagement {
             //ROOM数据库浏览组件
             alias('roomExplorer').to('com.wajahatkarim:roomexplorer:1.0.1')
 
-            version('gsonVersion','2.10')
-            alias('gson').to('com.google.code.gson','gson').versionRef('gsonVersion')
-            alias('gson-converter').to('com.squareup.retrofit2:converter-gson:2.5.0')
+            version('gsonVersion', '2.10')
+            alias('gson').to('com.google.code.gson', 'gson').versionRef('gsonVersion')
+            alias('gson-converter').to('com.squareup.retrofit2:converter-gson:2.9.0')
 
             //Glide和Glide注解器
             version('glideVersion', '4.12.0')
@@ -55,14 +55,15 @@ dependencyResolutionManagement {
 
             //阿里路由框架
             version('arouterVersion', '1.5.2')
-            alias('arouter-api').to('com.alibaba','arouter-api').versionRef('arouterVersion')
-            alias('arouter-compiler').to('com.alibaba','arouter-compiler').versionRef('arouterVersion')
+            alias('arouter-api').to('com.alibaba', 'arouter-api').versionRef('arouterVersion')
+            alias('arouter-compiler').to('com.alibaba', 'arouter-compiler').versionRef('arouterVersion')
 
-            version('retrofitVersion','2.9.0')
-            alias('retrofit').to('com.squareup.retrofit2','retrofit').versionRef('retrofitVersion')
+            version('retrofitVersion', '2.9.0')
+            alias('retrofit').to('com.squareup.retrofit2', 'retrofit').versionRef('retrofitVersion')
 
-            version('okhttpVersion','4.10.0')
-            alias('okhttp').to('com.squareup.okhttp3','okhttp').versionRef('okhttpVersion')
+            version('okhttpVersion', '4.10.0')
+            alias('okhttp').to('com.squareup.okhttp3', 'okhttp').versionRef('okhttpVersion')
+            alias('okhttp-logging-interceptor').to('com.squareup.okhttp3:logging-interceptor:4.9.1')
         }
     }
 

@@ -10,5 +10,4 @@ dependencies {
     kapt libs.glide.compiler
 
     api libs.arouter.api
-
 }

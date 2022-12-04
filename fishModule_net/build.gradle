@@ -5,4 +5,5 @@ dependencies {
     implementation libs.gson.converter
     implementation libs.retrofit
     implementation libs.okhttp
+    implementation libs.okhttp.logging.interceptor
 }

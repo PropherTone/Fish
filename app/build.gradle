@@ -6,7 +6,7 @@ android {
     compileSdk libs.versions.compileSdk.get().toInteger()
 
     defaultConfig {
-        applicationId "com.protone.metime"
+        applicationId "com.protone.fish"
         minSdk libs.versions.minSdk.get().toInteger()
         targetSdk libs.versions.targetSdk.get().toInteger()
         versionCode libs.versions.versionCode.get().toInteger()
