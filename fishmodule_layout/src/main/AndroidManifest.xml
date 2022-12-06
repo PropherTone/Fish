@@ -3,10 +3,7 @@
     package="com.protone.fishmodule_layout">
 
     <application>
-        <activity
-            android:name=".Material3Activity"
-            android:exported="false"
-            android:theme="@style/Theme.Fish" />
+        <activity android:name="com.protone.layout.activity.GithubActivity" />
     </application>
 
 </manifest>

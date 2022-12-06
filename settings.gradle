@@ -64,6 +64,8 @@ dependencyResolutionManagement {
             version('okhttpVersion', '4.10.0')
             alias('okhttp').to('com.squareup.okhttp3', 'okhttp').versionRef('okhttpVersion')
             alias('okhttp-logging-interceptor').to('com.squareup.okhttp3:logging-interceptor:4.9.1')
+
+            alias("paging").to("androidx.paging:paging-runtime:3.1.1")
         }
     }
 

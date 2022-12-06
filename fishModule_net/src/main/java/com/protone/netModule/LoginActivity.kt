@@ -10,6 +10,7 @@ import com.protone.common.baseType.launchDefault
 import com.protone.common.baseType.withMainContext
 import com.protone.common.component.ModelTestListHelper
 import com.protone.common.context.newLayoutInflater
+import com.protone.common.entity.BaseResponse
 import com.protone.common.routerPath.NetRouterPath
 import com.protone.common.utils.TAG
 import com.protone.netModule.databinding.ActivityLoginBinding
@@ -51,7 +52,7 @@ class LoginActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         suspend fun login(
             @Path("captcha") captcha: String,
             @Body user: User
-        ): MainActivity.BaseResponse<String>
+        ): BaseResponse<String>
     }
 
     data class User(val phoneNum: String, val password: String)

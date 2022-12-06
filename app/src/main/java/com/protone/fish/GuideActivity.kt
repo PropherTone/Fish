@@ -9,6 +9,7 @@ import com.protone.common.context.checkNeededPermission
 import com.protone.common.context.newLayoutInflater
 import com.protone.common.context.requestContentPermission
 import com.protone.common.routerPath.CoroutineRouterPath
+import com.protone.common.routerPath.LayoutRouterPath
 import com.protone.common.routerPath.NetRouterPath
 import com.protone.common.routerPath.ProjectDesignRouterPath
 import com.protone.fish.databinding.ActivityGuideBinding
@@ -22,10 +23,7 @@ class GuideActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
-        checkNeededPermission({
-            requestContentPermission()
-        }, {
-        })
+        checkNeededPermission({ requestContentPermission() }, {})
         //添加模块入口Activity索引
         //first：显示名称  second：ARouter路由地址
         ModelTestListHelper<String>().add("Module Net", NetRouterPath.Main)
@@ -33,6 +31,7 @@ class GuideActivity : AppCompatActivity() {
             .add("ARouterTest", ProjectDesignRouterPath.DestinationA)
             .add("CoroutineTest", CoroutineRouterPath.Coroutine)
             .add("Login", NetRouterPath.Login)
+            .add("Paging", LayoutRouterPath.Github)
             .init(binding.enterList, GridLayoutManager(this, 2), 12) {
                 ARouter.getInstance().build(it).navigation()
             }

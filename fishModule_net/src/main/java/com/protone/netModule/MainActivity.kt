@@ -13,6 +13,7 @@ import com.protone.common.baseType.launchDefault
 import com.protone.common.baseType.launchMain
 import com.protone.common.component.ModelTestListHelper
 import com.protone.common.context.newLayoutInflater
+import com.protone.common.entity.BaseResponse
 import com.protone.common.routerPath.NetRouterPath
 import com.protone.common.utils.displayUtils.imageLoader.Image
 import com.protone.netModule.databinding.ActivityMainBinding
@@ -49,13 +50,6 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     }
 
     data class Comment(val articleId: Int, val commentContent: String)
-
-    class BaseResponse<T>(
-        var success: Boolean = false,
-        var data: T,
-        var code: Int = -1,
-        var message: String = ""
-    )
 
     interface Api {
         @GET("/get/text")

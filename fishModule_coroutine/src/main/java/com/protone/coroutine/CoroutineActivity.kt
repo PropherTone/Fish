@@ -1,8 +1,11 @@
 package com.protone.coroutine
 
 import android.os.Bundle
+import android.os.Handler
+import android.os.HandlerThread
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.alibaba.android.arouter.facade.annotation.Route
 import com.protone.common.baseType.launchDefault
@@ -12,11 +15,15 @@ import com.protone.common.routerPath.CoroutineRouterPath
 import com.protone.common.utils.TAG
 import com.protone.coroutine.databinding.CoroutineActivityLayoutBinding
 import kotlinx.coroutines.*
+import kotlinx.coroutines.android.asCoroutineDispatcher
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.selects.select
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import java.util.concurrent.Executor
+import java.util.concurrent.Executors
 import java.util.concurrent.locks.ReentrantLock
+import kotlin.coroutines.CoroutineContext
 
 @Route(path = CoroutineRouterPath.Coroutine)
 class CoroutineActivity : AppCompatActivity(), CoroutineScope by MainScope() {
@@ -30,6 +37,8 @@ class CoroutineActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         ModelTestListHelper<() -> Unit>()
             .add("selectTest", selectTest())
             .add("coroutineSyncStressTest", coroutineSyncStressTest())
+            .add("coContextDispatchToCurrentThread", coContextDispatchToCurrentThread())
+            .add("coContextTest", coContextTest())
             .init(
                 binding.list,
                 LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false),
@@ -277,6 +286,43 @@ class CoroutineActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                 mutexJob.start()
                 reentrantLockJob.start()
             }
+        }
+    }
+
+    private fun coContextDispatchToCurrentThread(): () -> Unit = {
+        val handlerThread = HandlerThread("thread")
+        val handler = handlerThread.run {
+            start()
+            Handler(this.looper)
+        }
+        val dispatcher = handler.asCoroutineDispatcher()
+        Executors.newSingleThreadExecutor().asCoroutineDispatcher()
+        launch(dispatcher) {
+            val currentThread = Thread.currentThread()
+            Log.d(TAG, "coContextDispatchToCurrentThread: $currentThread")
+        }
+    }
+
+    private fun coContextTest(): () -> Unit = {
+        val job = Job()
+        launch(job.plus(Dispatchers.Default)) {
+            Log.d(TAG, "coContextTest: ${Thread.currentThread()}")
+        }
+        fun launchWithCatch(
+            coroutineContext: CoroutineContext,
+            coroutineStart: CoroutineStart = CoroutineStart.DEFAULT,
+            onError: (CoroutineContext, Throwable) -> Unit,
+            block: suspend CoroutineScope.() -> Unit
+        ) {
+            launch(coroutineContext + CoroutineExceptionHandler { coContext, throwable ->
+                onError(coContext, throwable)
+            }, coroutineStart, block = block)
+        }
+        launchWithCatch(Dispatchers.IO, onError = { _, throwable ->
+            throwable.printStackTrace()
+        }) {
+            val i = 1 / 0
+            Log.d(TAG, "coContextTest: $i")
         }
     }
 

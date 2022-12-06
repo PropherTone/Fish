@@ -21,7 +21,7 @@ class DestinationBActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
         binding.apply {
-            msg.text = intent.extras?.getString("data")
+            msg.text = intent.getStringExtra("data")
             jump.setOnClickListener {
                 ARouter.getInstance().build(DestinationA).navigation()
             }

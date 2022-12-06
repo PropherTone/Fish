@@ -49,7 +49,7 @@ class DestinationAActivity : AppCompatActivity(), CoroutineScope by MainScope() 
 
     private val _activityResultMessenger by lazy { MutableSharedFlow<Intent?>() }
     val activityResultMessenger by lazy { _activityResultMessenger.asSharedFlow() }
-    suspend inline fun startActivityForResult(
+    private suspend inline fun startActivityForResult(
         routerPath: String,
         crossinline postCard: Postcard.() -> Postcard = { this },
     ) = onResult { co ->
