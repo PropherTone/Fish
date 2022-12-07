@@ -32,6 +32,7 @@ class GuideActivity : AppCompatActivity() {
             .add("CoroutineTest", CoroutineRouterPath.Coroutine)
             .add("Login", NetRouterPath.Login)
             .add("Paging", LayoutRouterPath.Github)
+            .add("List", LayoutRouterPath.List)
             .init(binding.enterList, GridLayoutManager(this, 2), 12) {
                 ARouter.getInstance().build(it).navigation()
             }

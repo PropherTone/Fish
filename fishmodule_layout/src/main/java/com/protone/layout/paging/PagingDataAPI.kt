@@ -19,7 +19,7 @@ class PagingDataAPI {
         const val BASE_URL = "https://api.github.com"
     }
 
-    private val api by lazy {
+    val api by lazy {
         Retrofit.Builder()
             .baseUrl(BASE_URL)
             .client(

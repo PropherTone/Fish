@@ -1,4 +1,4 @@
-package com.protone.layout
+package com.protone.layout.adapter
 
 import android.view.ViewGroup
 import androidx.paging.PagingDataAdapter

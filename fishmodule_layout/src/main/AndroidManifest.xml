@@ -3,6 +3,7 @@
     package="com.protone.fishmodule_layout">
 
     <application>
+        <activity android:name="com.protone.layout.activity.ListActivity" />
         <activity android:name="com.protone.layout.activity.GithubActivity" />
     </application>
 

@@ -1,5 +1,6 @@
 package com.protone.layout.paging
 
+import android.accounts.NetworkErrorException
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.protone.common.baseType.withDefaultContext
@@ -12,6 +13,7 @@ class GithubPagingSource(private val api: PagingDataAPI.API) : PagingSource<Int,
 
     override fun getRefreshKey(state: PagingState<Int, Item>): Int? = null
 
+    @Suppress("BlockingMethodInNonBlockingContext")
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Item> {
         return runCatching {
             (params.key ?: 1).let { page ->
@@ -28,7 +30,7 @@ class GithubPagingSource(private val api: PagingDataAPI.API) : PagingSource<Int,
                         )
                     }
                 } else {
-                    throw NullPointerException()
+                    throw NetworkErrorException()
                 }
             }
         }.let {

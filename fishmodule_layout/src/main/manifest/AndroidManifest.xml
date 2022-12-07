@@ -10,6 +10,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Fish" >
         <activity android:name="com.protone.layout.activity.GithubActivity" />
+        <activity android:name="com.protone.layout.activity.ListActivity" />
     </application>
 
 </manifest>
