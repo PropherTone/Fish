@@ -8,6 +8,7 @@ import com.protone.common.context.newLayoutInflater
 import com.protone.common.routerPath.ProjectDesignRouterPath
 import com.protone.projectDesign.BR
 import com.protone.projectDesign.R
+import com.protone.projectDesign.common.ServiceProxy
 import com.protone.projectDesign.databinding.ActivityMvvmBinding
 import com.protone.projectDesign.mvvm.viewModel.MVVMViewModel
 
@@ -20,6 +21,7 @@ class MVVMActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
+        ServiceProxy().show()
         binding.setVariable(BR.model, model)
         model.buttonText.set("设置背景")
         model.listener.set {

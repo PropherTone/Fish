@@ -1,1 +1,6 @@
 apply from:'../module_build.gradle'
+
+dependencies {
+    implementation libs.auto.service
+    implementation libs.auto.service.annotations
+}

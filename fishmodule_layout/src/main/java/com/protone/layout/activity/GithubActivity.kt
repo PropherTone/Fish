@@ -59,7 +59,9 @@ class GithubActivity : AppCompatActivity(), CoroutineScope by MainScope() {
             }
 
             override fun displayLoadStateAsItem(loadState: LoadState): Boolean {
-                return loadState is LoadState.Loading || loadState is LoadState.Error || (loadState is LoadState.NotLoading && loadState.endOfPaginationReached)
+                return loadState is LoadState.Loading
+                        || loadState is LoadState.Error
+                        || (loadState is LoadState.NotLoading && loadState.endOfPaginationReached)
             }
 
             override fun onCreateViewHolder(

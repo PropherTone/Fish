@@ -42,6 +42,8 @@ class ListActivity : AppCompatActivity() {
         } ?: mutableListOf()
     }
 
+    private var itemCount = 100
+
     private val listAdapter by lazy {
         object : RecyclerView.Adapter<GithubPagingAdapter.Holder>() {
             override fun onCreateViewHolder(
@@ -58,16 +60,25 @@ class ListActivity : AppCompatActivity() {
             }
 
             override fun onBindViewHolder(holder: GithubPagingAdapter.Holder, position: Int) {
+                if (position >= list.size) {
+                    holder.binding.apply {
+                        name.text = "$position"
+                        description.text = "it.description"
+                        star.text = "it.stargazers_count.toString()"
+
+                    }
+                    return
+                }
                 holder.binding.apply {
                     list[position].let {
-                        name.text = it.name
+                        name.text = "[$position]${it.name}"
                         description.text = it.description
                         star.text = it.stargazers_count.toString()
                     }
                 }
             }
 
-            override fun getItemCount(): Int = list.size
+            override fun getItemCount(): Int = this@ListActivity.itemCount
 
         }
     }
@@ -78,6 +89,11 @@ class ListActivity : AppCompatActivity() {
         binding.list.apply {
             layoutManager = LinearLayoutManager(this@ListActivity)
             adapter = listAdapter
+            postDelayed({
+                list.addAll(list)
+                itemCount = 200
+                listAdapter.notifyItemRangeChanged(50, 80)
+            }, 20000)
         }
     }
 }

@@ -66,6 +66,10 @@ dependencyResolutionManagement {
             alias('okhttp-logging-interceptor').to('com.squareup.okhttp3:logging-interceptor:4.9.1')
 
             alias("paging").to("androidx.paging:paging-runtime:3.1.1")
+
+            version('autoServiceVersion', '1.0.1')
+            alias('auto-service').to('com.google.auto.service', 'auto-service').versionRef('autoServiceVersion')
+            alias('auto-service-annotations').to('com.google.auto.service', 'auto-service-annotations').versionRef('autoServiceVersion')
         }
     }
 

@@ -1,13 +1,12 @@
 package com.protone.coroutine
 
-import android.os.Bundle
-import android.os.Handler
-import android.os.HandlerThread
+import android.os.*
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.alibaba.android.arouter.facade.annotation.Route
+import com.protone.common.baseType.bufferCollect
 import com.protone.common.baseType.launchDefault
 import com.protone.common.component.ModelTestListHelper
 import com.protone.common.context.newLayoutInflater
@@ -17,6 +16,7 @@ import com.protone.coroutine.databinding.CoroutineActivityLayoutBinding
 import kotlinx.coroutines.*
 import kotlinx.coroutines.android.asCoroutineDispatcher
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.selects.select
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -39,6 +39,7 @@ class CoroutineActivity : AppCompatActivity(), CoroutineScope by MainScope() {
             .add("coroutineSyncStressTest", coroutineSyncStressTest())
             .add("coContextDispatchToCurrentThread", coContextDispatchToCurrentThread())
             .add("coContextTest", coContextTest())
+            .add("coroutineTest", coroutineTest())
             .init(
                 binding.list,
                 LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false),
@@ -324,6 +325,17 @@ class CoroutineActivity : AppCompatActivity(), CoroutineScope by MainScope() {
             val i = 1 / 0
             Log.d(TAG, "coContextTest: $i")
         }
+    }
+
+    private fun coroutineTest(): () -> Unit = {
+        val job = launch(start = CoroutineStart.LAZY) {
+            delay(500)
+            Log.d(TAG, "coroutineTest: delay")
+        }
+        job.start()
+        Log.d(TAG, "coroutineTest: start")
+        job.cancel()
+        Log.d(TAG, "coroutineTest: cancel")
     }
 
 }
