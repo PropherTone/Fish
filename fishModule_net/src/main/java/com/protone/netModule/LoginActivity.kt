@@ -25,7 +25,6 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.*
 import java.security.MessageDigest
 import java.util.*
-import kotlin.experimental.and
 
 @Route(path = NetRouterPath.Login)
 class LoginActivity : AppCompatActivity(), CoroutineScope by MainScope() {

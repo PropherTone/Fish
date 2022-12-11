@@ -40,6 +40,7 @@ class CoroutineActivity : AppCompatActivity(), CoroutineScope by MainScope() {
             .add("coContextDispatchToCurrentThread", coContextDispatchToCurrentThread())
             .add("coContextTest", coContextTest())
             .add("coroutineTest", coroutineTest())
+            .add("eventCache", eventCache())
             .init(
                 binding.list,
                 LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false),
@@ -336,6 +337,46 @@ class CoroutineActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         Log.d(TAG, "coroutineTest: start")
         job.cancel()
         Log.d(TAG, "coroutineTest: cancel")
+    }
+
+    sealed class Event {
+        object ASD : Event()
+        object BSD : Event()
+        object CSD : Event()
+    }
+
+    private fun eventCache(): () -> Unit = {
+        val eventCachePool = EventCachePool<Event>(duration = 1000L)
+        val events = mutableListOf<Event>()
+        launchDefault {
+            repeat(1000) {
+                when {
+                    it % 3 == 0 -> {
+                        events.add(Event.ASD)
+                    }
+                    it % 2 == 0 -> {
+                        events.add(Event.BSD)
+                    }
+                    it % 1 == 0 -> {
+                        events.add(Event.CSD)
+                    }
+                }
+            }
+            var isDelayed = false
+            events.forEach {
+                eventCachePool.holdEvent(it)
+                if (!isDelayed) {
+                    delay(2000)
+                    isDelayed = true
+                }
+            }
+            Log.d(TAG, "events.size: ${events.size}")
+            val list = mutableListOf<Event>()
+            eventCachePool.handleEvent {
+                list.addAll(it)
+                Log.d(TAG, "list.size: ${list.size}")
+            }
+        }
     }
 
 }
