@@ -1,6 +1,7 @@
 package com.protone.fish
 
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
 import com.alibaba.android.arouter.launcher.ARouter
@@ -36,6 +37,6 @@ class GuideActivity : AppCompatActivity() {
             .init(binding.enterList, GridLayoutManager(this, 2), 12) {
                 ARouter.getInstance().build(it).navigation()
             }
-
     }
+
 }

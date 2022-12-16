@@ -15,8 +15,11 @@ import com.protone.common.utils.TAG
 import com.protone.coroutine.databinding.CoroutineActivityLayoutBinding
 import kotlinx.coroutines.*
 import kotlinx.coroutines.android.asCoroutineDispatcher
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.selects.select
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -41,6 +44,7 @@ class CoroutineActivity : AppCompatActivity(), CoroutineScope by MainScope() {
             .add("coContextTest", coContextTest())
             .add("coroutineTest", coroutineTest())
             .add("eventCache", eventCache())
+            .add("channel", channel())
             .init(
                 binding.list,
                 LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false),
@@ -375,6 +379,32 @@ class CoroutineActivity : AppCompatActivity(), CoroutineScope by MainScope() {
             eventCachePool.handleEvent {
                 list.addAll(it)
                 Log.d(TAG, "list.size: ${list.size}")
+            }
+        }
+    }
+
+    private fun channel(): () -> Unit = {
+        val channel = Channel<Event>(onBufferOverflow = BufferOverflow.DROP_OLDEST)
+        launchDefault {
+            channel.receiveAsFlow().collectLatest {
+                delay(2000)
+                Log.d(TAG, "channel: $it")
+            }
+        }
+        launchDefault {
+            repeat(10) {
+                when {
+                    it % 3 == 0 -> {
+                        channel.send(Event.ASD)
+                    }
+                    it % 2 == 0 -> {
+                        channel.send(Event.BSD)
+                    }
+                    it % 1 == 0 -> {
+                        channel.send(Event.CSD)
+                    }
+                }
+                delay(1000)
             }
         }
     }

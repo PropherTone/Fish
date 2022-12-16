@@ -3,14 +3,22 @@
     package="com.protone.fishmodule_layout">
 
     <application
+        android:name="com.protone.common.MainApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="Layout"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Fish" >
+        android:theme="@style/Theme.Fish">
         <activity android:name="com.protone.layout.activity.GithubActivity" />
         <activity android:name="com.protone.layout.activity.ListActivity" />
+        <activity android:name="com.protone.layout.activity.BlurActivity"
+            android:exported="true">
+            <intent-filter>
+                <category android:name="android.intent.category.LAUNCHER" />
+                <action android:name="android.intent.action.MAIN" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>
