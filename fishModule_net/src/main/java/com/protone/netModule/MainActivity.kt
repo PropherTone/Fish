@@ -1,9 +1,11 @@
 package com.protone.netModule
 
 import android.graphics.BitmapFactory
+import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.text.method.ScrollingMovementMethod
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.alibaba.android.arouter.facade.annotation.Route
@@ -77,7 +79,8 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
             .init(
                 binding.requestList,
                 LinearLayoutManager(this@MainActivity, LinearLayoutManager.HORIZONTAL, false), 0
-            ) {
+            )
+            {
                 launchDefault {
                     runCatching {
                         it.invoke()

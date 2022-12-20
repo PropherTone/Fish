@@ -6,6 +6,7 @@
         <activity android:name="com.protone.layout.activity.ListActivity" />
         <activity android:name="com.protone.layout.activity.GithubActivity" />
         <activity android:name="com.protone.layout.activity.BlurActivity" />
+        <activity android:name="com.protone.layout.activity.animation.RevealActivity" />
     </application>
 
 </manifest>

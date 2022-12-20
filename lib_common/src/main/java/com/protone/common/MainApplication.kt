@@ -7,20 +7,29 @@ import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
 import android.graphics.Paint
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.core.view.drawToBitmap
 import com.alibaba.android.arouter.launcher.ARouter
 import com.protone.common.baseType.DPI
 import com.protone.common.context.MApplication
 import com.protone.common.utils.SCrashHandler
+import com.protone.common.utils.TAG
 import com.protone.common.utils.displayUtils.Blur
 import com.protone.common.utils.todayDate
 import java.io.File
 
 class MainApplication : Application() {
 
+    companion object {
+        @JvmStatic
+        var ALIVE = "Terminate"
+    }
+
     override fun attachBaseContext(base: Context?) {
         super.attachBaseContext(base)
+        Log.d(TAG, "attachBaseContext: ")
+        ALIVE = "Alive"
         Blur.init(this)
         MApplication.init(this)
         if (BuildConfig.DEBUG) {
@@ -71,6 +80,8 @@ class MainApplication : Application() {
 
     override fun onTerminate() {
         super.onTerminate()
+        ALIVE = "Terminate"
+        Log.d(TAG, "onTerminate: ")
         ARouter.getInstance().destroy()
     }
 

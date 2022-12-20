@@ -7,8 +7,10 @@ import android.util.Log
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.animation.doOnEnd
+import com.alibaba.android.arouter.facade.annotation.Route
 import com.protone.common.context.MApplication
 import com.protone.common.context.newLayoutInflater
+import com.protone.common.routerPath.LayoutRouterPath
 import com.protone.common.utils.TAG
 import com.protone.fishmodule_layout.databinding.ActivityBlurBinding
 import com.protone.layout.view.blur.RenderScriptBlur
@@ -17,6 +19,7 @@ import com.protone.layout.view.blurView.DefaultBlurEngine
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 
+@Route(path = LayoutRouterPath.Blur)
 class BlurActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
     private val binding by lazy { ActivityBlurBinding.inflate(newLayoutInflater) }

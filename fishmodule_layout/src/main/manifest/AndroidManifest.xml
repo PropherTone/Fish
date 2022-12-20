@@ -12,7 +12,10 @@
         android:theme="@style/Theme.Fish">
         <activity android:name="com.protone.layout.activity.GithubActivity" />
         <activity android:name="com.protone.layout.activity.ListActivity" />
-        <activity android:name="com.protone.layout.activity.BlurActivity"
+        <activity android:name="com.protone.layout.activity.BlurActivity" />
+        <activity android:name="com.protone.layout.activity.animation.RevealActivity" />
+        <activity
+            android:name="com.protone.layout.activity.LayoutGuideActivity"
             android:exported="true">
             <intent-filter>
                 <category android:name="android.intent.category.LAUNCHER" />
