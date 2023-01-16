@@ -10,8 +10,10 @@ import com.protone.common.context.newLayoutInflater
 import com.protone.common.context.requestContentPermission
 import com.protone.common.routerPath.LayoutRouterPath
 import com.protone.fishmodule_layout.databinding.ActivityGuideLayoutBinding
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.MainScope
 
-class LayoutGuideActivity : AppCompatActivity() {
+class LayoutGuideActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
     private val binding by lazy { ActivityGuideLayoutBinding.inflate(newLayoutInflater) }
 
@@ -23,10 +25,11 @@ class LayoutGuideActivity : AppCompatActivity() {
         checkNeededPermission({ requestContentPermission() }, {})
         //添加模块入口Activity索引
         //first：显示名称  second：ARouter路由地址
-        ModelTestListHelper<String>().add("LoadingList", LayoutRouterPath.List)
+        ModelTestListHelper<String>().add("LoadingList", LayoutRouterPath.LoadingList)
             .add("Pagination", LayoutRouterPath.Github)
             .add("Blur", LayoutRouterPath.Blur)
             .add("Reveal", LayoutRouterPath.Reveal)
+            .add("List", LayoutRouterPath.List)
             .init(binding.list, GridLayoutManager(this, 2), 12) {
                 ARouter.getInstance().build(it).navigation()
             }

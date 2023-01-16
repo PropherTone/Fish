@@ -9,16 +9,19 @@ import com.alibaba.android.arouter.facade.annotation.Route
 import com.protone.common.context.newLayoutInflater
 import com.protone.common.routerPath.LayoutRouterPath
 import com.protone.fishmodule_layout.databinding.ActivityRevealBinding
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.MainScope
 import kotlin.math.hypot
 
 @Route(path = LayoutRouterPath.Reveal)
-class RevealActivity : AppCompatActivity() {
+class RevealActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
     private val binding by lazy { ActivityRevealBinding.inflate(newLayoutInflater) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
+
         binding.apply {
             button.setOnClickListener {
                 // get the center for the clipping circle

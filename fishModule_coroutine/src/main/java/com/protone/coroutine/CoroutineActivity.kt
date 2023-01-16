@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.alibaba.android.arouter.facade.annotation.Route
 import com.protone.common.baseType.bufferCollect
 import com.protone.common.baseType.launchDefault
+import com.protone.common.baseType.withIOContext
 import com.protone.common.component.ModelTestListHelper
 import com.protone.common.context.newLayoutInflater
 import com.protone.common.routerPath.CoroutineRouterPath
@@ -36,6 +37,10 @@ class CoroutineActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
+
+        launch {
+            suspendFunc()
+        }
 
         ModelTestListHelper<() -> Unit>()
             .add("selectTest", selectTest())
@@ -408,5 +413,35 @@ class CoroutineActivity : AppCompatActivity(), CoroutineScope by MainScope() {
             }
         }
     }
+
+    private suspend fun suspendFunc() {
+        Log.d(TAG, "suspendFunc: ${this.coroutineContext}")
+        Log.d(TAG, "suspendFunc: ${Thread.currentThread().name}")
+        suspendFunc1()
+        suspendFunc2()
+        suspendFunc3()
+        suspendFunc4()
+    }
+
+    private suspend fun suspendFunc1() = withIOContext {
+        Log.d(TAG, "suspendFunc1: ${this.coroutineContext}")
+        Log.d(TAG, "suspendFunc1: ${Thread.currentThread().name}")
+    }
+
+    private suspend fun suspendFunc2() = withIOContext {
+        Log.d(TAG, "suspendFunc2: ${this.coroutineContext}")
+        Log.d(TAG, "suspendFunc2: ${Thread.currentThread().name}")
+    }
+
+    private suspend fun suspendFunc3() = withIOContext {
+        Log.d(TAG, "suspendFunc3: ${this.coroutineContext}")
+        Log.d(TAG, "suspendFunc3: ${Thread.currentThread().name}")
+    }
+
+    private suspend fun suspendFunc4() = withIOContext {
+        Log.d(TAG, "suspendFunc4: ${this.coroutineContext}")
+        Log.d(TAG, "suspendFunc4: ${Thread.currentThread().name}")
+    }
+
 
 }

@@ -2,6 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.protone.fishmodule_layout">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
     <application
         android:name="com.protone.common.MainApplication"
         android:allowBackup="true"
@@ -11,9 +15,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Fish">
         <activity android:name="com.protone.layout.activity.GithubActivity" />
-        <activity android:name="com.protone.layout.activity.ListActivity" />
+        <activity android:name="com.protone.layout.activity.LoadingListActivity" />
         <activity android:name="com.protone.layout.activity.BlurActivity" />
         <activity android:name="com.protone.layout.activity.animation.RevealActivity" />
+        <activity android:name="com.protone.layout.activity.ListActivity" />
         <activity
             android:name="com.protone.layout.activity.LayoutGuideActivity"
             android:exported="true">

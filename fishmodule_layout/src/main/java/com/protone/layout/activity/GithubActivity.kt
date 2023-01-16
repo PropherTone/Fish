@@ -92,8 +92,8 @@ class GithubActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 //            }
             binding.list.apply {
                 layoutManager = LinearLayoutManager(this@GithubActivity)
-                adapter = itemAdapter
-                itemAdapter.withLoadStateFooter(footAdapter)
+                val stateFooter = itemAdapter.withLoadStateFooter(footAdapter)
+                adapter = stateFooter
                 addItemDecoration(object : RecyclerView.ItemDecoration() {
                     val paint = Paint().apply {
                         color = Color.RED

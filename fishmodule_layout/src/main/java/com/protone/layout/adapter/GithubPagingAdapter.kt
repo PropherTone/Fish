@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.protone.common.context.newLayoutInflater
 import com.protone.fishmodule_layout.databinding.GithubHotItemLayoutBinding
 import com.protone.layout.entity.Item
+import kotlinx.coroutines.flow.MutableSharedFlow
 
 class GithubPagingAdapter :
     PagingDataAdapter<Item, GithubPagingAdapter.Holder>(object : DiffUtil.ItemCallback<Item>() {
