@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.animation.doOnEnd
 import com.alibaba.android.arouter.facade.annotation.Route
+import com.protone.common.baseType.launchDefault
 import com.protone.common.context.MApplication
 import com.protone.common.context.newLayoutInflater
 import com.protone.common.routerPath.LayoutRouterPath
@@ -18,6 +19,7 @@ import com.protone.layout.view.blurView.DefaultBlurController
 import com.protone.layout.view.blurView.DefaultBlurEngine
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.delay
 
 @Route(path = LayoutRouterPath.Blur)
 class BlurActivity : AppCompatActivity(), CoroutineScope by MainScope() {
