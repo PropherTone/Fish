@@ -26,6 +26,7 @@ class RegionDecoder(private val onDecoderListener: OnDecoderListener) :
 
     private var bitmapRegionDecoder: BitmapRegionDecoder? = null
     var fullImage: Bitmap? = null
+    val imageOriginalRect = Rect(0, 0, 0, 0)
 
     fun setImageResource(path: String, w: Int, h: Int) {
         launch {
@@ -50,7 +51,7 @@ class RegionDecoder(private val onDecoderListener: OnDecoderListener) :
         bitmapRegionDecoder = null
     }
 
-    private suspend fun InputStream.initDecoder(w: Int, h: Int) {
+    private suspend fun InputStream.initDecoder(viewWidth: Int, viewHeight: Int) {
         bitmapRegionDecoder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             BitmapRegionDecoder.newInstance(this)
         } else {
@@ -58,17 +59,47 @@ class RegionDecoder(private val onDecoderListener: OnDecoderListener) :
             BitmapRegionDecoder.newInstance(this, false)
         }
         bitmapRegionDecoder?.let {
-            var width = w
-            var height = h
-            if (width == 0) {
-                val mix = height / it.height.toFloat()
-                width = (it.width * mix).toInt()
+            var width = viewWidth
+            var height = viewHeight
+            when {
+                viewWidth == 0 && viewHeight == 0 -> {
+                    width = it.width
+                    height = it.height
+                    imageOriginalRect.right = width
+                    imageOriginalRect.bottom = height
+                }
+                viewWidth == 0 -> {
+                    val mix = height / it.height.toFloat()
+                    width = (it.width * mix).toInt()
+                    imageOriginalRect.right = width
+                    imageOriginalRect.bottom = height
+                }
+                viewHeight == 0 -> {
+                    val mix = width / it.width.toFloat()
+                    height = (it.height * mix).toInt()
+                    imageOriginalRect.right = width
+                    imageOriginalRect.bottom = height
+                }
+                else -> {
+                    if (viewHeight >= viewWidth) {
+                        val widthCompare = viewWidth / it.width.toFloat()
+                        val rectHeight = (it.height * widthCompare).toInt()
+                        imageOriginalRect.left = 0
+                        imageOriginalRect.right = viewWidth
+                        if (rectHeight > viewHeight) {
+                            imageOriginalRect.top = 0
+                            imageOriginalRect.bottom = viewHeight
+                            height = viewHeight
+                        } else {
+                            imageOriginalRect.top = (viewHeight / 2) - (rectHeight / 2)
+                            imageOriginalRect.bottom = rectHeight + imageOriginalRect.top
+                            height = rectHeight
+                        }
+                        width = viewWidth
+                    }
+                }
             }
-            if (height == 0) {
-                val mix = width / it.width.toFloat()
-                height = (it.height * mix).toInt()
-            }
-            it.decodeRegion(Rect(0, 0, it.width, it.height), BitmapFactory.Options().apply {
+            it.decodeRegion(Rect(0, 0, width, height), BitmapFactory.Options().apply {
                 inSampleSize = calculateInSampleSize(it.width, it.height, width, height)
             })
         }?.also {
