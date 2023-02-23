@@ -44,6 +44,9 @@ class ImageRegionLoadingView @JvmOverloads constructor(
 
     private val gestureHandler by lazy {
         GestureHandler(this) {
+            setOnScale { _, _ ->
+                invalidate()
+            }
             doScaleRequest {
                 Log.d(TAG, "doScaleRequest ")
                 true
@@ -97,14 +100,17 @@ class ImageRegionLoadingView @JvmOverloads constructor(
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
     }
 
-    private val bitmapPaint: Paint = Paint().apply {
-        flags = Paint.FILTER_BITMAP_FLAG
-    }
+    private val globalRect by lazy { Rect() }
+    private val localRect by lazy { Rect() }
 
     override fun onDraw(canvas: Canvas?) {
         super.onDraw(canvas)
-        regionDecoder.fullImage?.let {
-            canvas?.drawBitmap(it, null, regionDecoder.imageOriginalRect, bitmapPaint)
-        }
+        regionDecoder.drawOriginImage(canvas)
+        regionDecoder.drawScaled(
+            scaleX,
+            getGlobalVisibleRect(globalRect).let { globalRect },
+            getLocalVisibleRect(localRect).let { localRect },
+            canvas
+        )
     }
 }

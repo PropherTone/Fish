@@ -18,8 +18,7 @@ class GestureHandler(
     }
 
     private var doScaleRequest: () -> Boolean = { true }
-    private var onScale: ((Float, Float) -> Boolean)? = null
-
+    private var onScale: ((Float, Float) -> Unit)? = null
     private var onDown: ((MotionEvent?) -> Boolean)? = null
     private var onShowPressed: ((MotionEvent?) -> Unit)? = null
     private var onLongPressed: ((MotionEvent?) -> Unit)? = null
@@ -33,7 +32,7 @@ class GestureHandler(
 
     inner class OnGestureEvent {
 
-        fun setOnScale(scale: (Float, Float) -> Boolean) {
+        fun setOnScale(scale: (Float, Float) -> Unit) {
             this@GestureHandler.onScale = scale
         }
 
