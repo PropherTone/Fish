@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
-import android.graphics.Paint
 import android.graphics.Rect
 import android.net.Uri
 import android.util.AttributeSet
@@ -13,13 +12,16 @@ import android.view.MotionEvent
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.core.view.updateLayoutParams
 import com.protone.common.utils.TAG
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 
 class ImageRegionLoadingView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null
-) : AppCompatImageView(context, attrs) {
+) : AppCompatImageView(context, attrs), CoroutineScope by CoroutineScope(Dispatchers.Default) {
 
     private val regionDecoder by lazy {
-        RegionDecoder(object : RegionDecoder.OnDecoderListener {
+        RegionDecoder(this, object : RegionDecoder.OnDecoderListener {
 
             override fun onResourceReady(resource: Bitmap) {
                 when {
@@ -43,7 +45,15 @@ class ImageRegionLoadingView @JvmOverloads constructor(
     }
 
     private val gestureHandler by lazy {
-        GestureHandler(this) {
+        GestureHandler(this, this) {
+            setOnFingerUp {
+                Log.d(TAG, "up: $alpha")
+                if (alpha != 1f) {
+                    alpha = 1f
+                    scrollX = 0
+                    scrollY = 0
+                }
+            }
             setOnScale { _, _ ->
                 invalidate()
             }
@@ -61,17 +71,35 @@ class ImageRegionLoadingView @JvmOverloads constructor(
             }
             onLongPressed {
                 Log.d(TAG, "onLongPressed ")
-
             }
             onShowPressed {
                 Log.d(TAG, "onShowPressed ")
-
             }
             onSingleTapConfirmed {
                 Log.d(TAG, "onSingleTapConfirmed ")
                 true
             }
-        }
+            onFling {
+                scaleX > 1f
+            }
+        }.setOnFlyingEvent(object : OnFlingEvent {
+            //scrollX:scroll left when value < 0
+            override fun calculateScrollHorizontally(scrollValue: Float) {
+                if (scaleX <= 1f) {
+                    alpha -= 0.01f
+                }
+                scrollX += scrollValue.toInt()
+            }
+
+            //scrollY:scroll up when value < 0
+            override fun calculateScrollVertically(scrollValue: Float) {
+                if (scaleX <= 1f) {
+                    alpha -= 0.01f
+                }
+                scrollY += scrollValue.toInt()
+            }
+
+        })
     }
 
     private var widthMode = MeasureSpec.EXACTLY
@@ -100,7 +128,6 @@ class ImageRegionLoadingView @JvmOverloads constructor(
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
     }
 
-    private val globalRect by lazy { Rect() }
     private val localRect by lazy { Rect() }
 
     override fun onDraw(canvas: Canvas?) {
@@ -108,9 +135,14 @@ class ImageRegionLoadingView @JvmOverloads constructor(
         regionDecoder.drawOriginImage(canvas)
         regionDecoder.drawScaled(
             scaleX,
-            getGlobalVisibleRect(globalRect).let { globalRect },
             getLocalVisibleRect(localRect).let { localRect },
             canvas
         )
+    }
+
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        cancel()
+        regionDecoder.release()
     }
 }

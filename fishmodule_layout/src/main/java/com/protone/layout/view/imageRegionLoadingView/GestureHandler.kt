@@ -4,10 +4,13 @@ import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
 import android.widget.OverScroller
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import kotlin.math.sqrt
 
 class GestureHandler(
     private val view: View,
+    private val coroutineScope: CoroutineScope,
     onGesture: (OnGestureEvent.() -> Unit)? = null
 ) : GestureDetector.SimpleOnGestureListener() {
 
@@ -17,6 +20,7 @@ class GestureHandler(
         onGesture?.invoke(onGestureEvent)
     }
 
+    private var onFingerUp: (() -> Unit)? = null
     private var doScaleRequest: () -> Boolean = { true }
     private var onScale: ((Float, Float) -> Unit)? = null
     private var onDown: ((MotionEvent?) -> Boolean)? = null
@@ -24,13 +28,19 @@ class GestureHandler(
     private var onLongPressed: ((MotionEvent?) -> Unit)? = null
     private var onSingleTapConfirmed: ((MotionEvent?) -> Boolean)? = null
     private var onDoubleTap: ((MotionEvent?) -> Boolean)? = null
-    private var onFling: (() -> Boolean)? = null
-    private var onFlyingEvent: OnFlyingEvent? = null
-    fun setOnFlyingEvent(onFlyingEvent: OnFlyingEvent) {
-        this.onFlyingEvent = onFlyingEvent
+    private var onScroll: (() -> Boolean)? = null
+    private var doFling: (() -> Boolean)? = null
+    private var onFlingEvent: OnFlingEvent? = null
+    fun setOnFlyingEvent(onFlingEvent: OnFlingEvent): GestureHandler {
+        this.onFlingEvent = onFlingEvent
+        return this
     }
 
     inner class OnGestureEvent {
+
+        fun setOnFingerUp(onFingerUp: () -> Unit) {
+            this@GestureHandler.onFingerUp = onFingerUp
+        }
 
         fun setOnScale(scale: (Float, Float) -> Unit) {
             this@GestureHandler.onScale = scale
@@ -60,14 +70,18 @@ class GestureHandler(
             this@GestureHandler.onDoubleTap = onDoubleTap
         }
 
+        fun onScroll(onScroll: () -> Boolean) {
+            this@GestureHandler.onScroll = onScroll
+        }
+
         fun onFling(onFling: () -> Boolean) {
-            this@GestureHandler.onFling = onFling
+            this@GestureHandler.doFling = onFling
         }
 
     }
 
     private val gestureDetector = GestureDetector(view.context, this)
-    private val overScroller = OverScroller(view.context)
+    private val overScroller = OverScroller(view.context, FlingInterpolator())
 
     //缩放相关
     companion object {
@@ -96,6 +110,7 @@ class GestureHandler(
                 clkX = ev.x
                 clkY = ev.y
                 view.parent.requestDisallowInterceptTouchEvent(false)
+                onFingerUp?.invoke()
             }
             MotionEvent.ACTION_POINTER_UP -> {
                 if (fingerCounts == 2) {
@@ -206,42 +221,8 @@ class GestureHandler(
         return false
     }
 
-    override fun onScroll(
-        e1: MotionEvent?,
-        e2: MotionEvent?,
-        distanceX: Float,
-        distanceY: Float
-    ): Boolean {
-        return super.onScroll(e1, e2, distanceX, distanceY)
-    }
-
     override fun onLongPress(e: MotionEvent?) {
         onLongPressed?.invoke(e)
-    }
-
-    override fun onFling(
-        e1: MotionEvent?,
-        e2: MotionEvent?,
-        velocityX: Float,
-        velocityY: Float
-    ): Boolean {
-        return onFlyingEvent?.let {
-            overScroller.fling(
-                view.scrollX,
-                view.scrollY,
-                -velocityX.toInt(),
-                -velocityY.toInt(),
-                Int.MIN_VALUE,
-                Int.MAX_VALUE,
-                Int.MIN_VALUE,
-                Int.MAX_VALUE
-            )
-            while (overScroller.computeScrollOffset()) {
-                it.calculateScrollHorizontally(overScroller.currX.toFloat() - view.scrollX)
-                it.calculateScrollVertically(overScroller.currY.toFloat() - view.scrollY)
-            }
-            onFling?.invoke()
-        } == true
     }
 
     override fun onSingleTapConfirmed(e: MotionEvent?): Boolean {
@@ -258,5 +239,46 @@ class GestureHandler(
 
     override fun onContextClick(e: MotionEvent?): Boolean {
         return super.onContextClick(e)
+    }
+
+    override fun onScroll(
+        e1: MotionEvent?,
+        e2: MotionEvent?,
+        distanceX: Float,
+        distanceY: Float
+    ): Boolean {
+        return onFlingEvent?.let {
+            it.calculateScrollHorizontally(distanceX)
+            it.calculateScrollVertically(distanceY)
+            onScroll?.invoke() ?: true
+        } == true
+    }
+
+    override fun onFling(
+        e1: MotionEvent?,
+        e2: MotionEvent?,
+        velocityX: Float,
+        velocityY: Float
+    ): Boolean {
+        return onFlingEvent?.let {
+            if (doFling?.invoke() == false) return false
+            coroutineScope.launch {
+                overScroller.fling(
+                    view.scrollX,
+                    view.scrollY,
+                    -velocityX.toInt(),
+                    -velocityY.toInt(),
+                    Int.MIN_VALUE,
+                    Int.MAX_VALUE,
+                    Int.MIN_VALUE,
+                    Int.MAX_VALUE
+                )
+                while (overScroller.computeScrollOffset()) {
+                    it.calculateScrollHorizontally(overScroller.currX.toFloat() - view.scrollX)
+                    it.calculateScrollVertically(overScroller.currY.toFloat() - view.scrollY)
+                }
+            }
+            true
+        } == true
     }
 }

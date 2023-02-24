@@ -14,8 +14,10 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.InputStream
 
-class RegionDecoder(private val onDecoderListener: OnDecoderListener) :
-    CoroutineScope by CoroutineScope(Dispatchers.Default) {
+class RegionDecoder(
+    private val coroutineScope: CoroutineScope,
+    private val onDecoderListener: OnDecoderListener
+) {
 
     interface OnDecoderListener {
         fun onResourceReady(resource: Bitmap)
@@ -27,14 +29,14 @@ class RegionDecoder(private val onDecoderListener: OnDecoderListener) :
     private var fullImage: Bitmap? = null
 
     private val imageOriginalRect = Rect(0, 0, 0, 0)
-    private val scaledRect = Rect(0, 0, 0, 0)
+    private val disPlayRect = Rect(0, 0, 0, 0)
     private val sampleRect = Rect(0, 0, 0, 0)
 
     private var srcScaledW = 0f
     private var srcScaledH = 0f
 
     fun setImageResource(path: String, w: Int, h: Int) {
-        launch {
+        coroutineScope.launch {
             release()
             val file = File(path)
             if (!file.isFile) return@launch
@@ -45,7 +47,7 @@ class RegionDecoder(private val onDecoderListener: OnDecoderListener) :
 
     @SuppressLint("Recycle")
     fun setImageResource(context: Context, uri: Uri, w: Int, h: Int) {
-        launch {
+        coroutineScope.launch {
             release()
             context.contentResolver?.openInputStream(uri)?.initDecoder(w, h)
         }
@@ -57,75 +59,90 @@ class RegionDecoder(private val onDecoderListener: OnDecoderListener) :
         }
     }
 
+    private val options by lazy { BitmapFactory.Options() }
+
     fun drawScaled(
         scaleValue: Float,
-        globalRect: Rect,
         localRect: Rect,
         canvas: Canvas?
     ) {
         if (scaleValue <= 1f) return
         bitmapRegionDecoder?.let { decoder ->
-            val scaledW =
-                ((scaledRect.right - imageOriginalRect.left) * scaleValue).toInt()
-            val scaledH =
-                ((scaledRect.bottom - imageOriginalRect.top) * scaleValue).toInt()
-            val options = BitmapFactory.Options()
+            val scaledW = (imageOriginalRect.right * scaleValue).toInt()
+            val scaledH = (imageOriginalRect.bottom * scaleValue).toInt()
+
             options.inSampleSize = calculateInSampleSize(
                 decoder.width,
                 decoder.height,
                 scaledW,
                 scaledH
             )
-//            if (options.inSampleSize <= 1) return
+            if (options.inSampleSize <= 1) return
 
-            Log.d(TAG, "ScaleValue: $scaleValue")
-            Log.d(TAG, "GlobalRect: $globalRect")
-            Log.d(TAG, "LocalRect: $localRect")
-            Log.d(TAG, "ImageOriginalRect: $imageOriginalRect")
-//            canvas?.drawRect(localRect, Paint().apply {
-//                color = Color.BLUE
-//            })
             imageOriginalRect.apply {
 
-                scaledRect.left = (localRect.left / scaleValue).toInt()
-                scaledRect.top = (localRect.top / scaleValue).toInt()
-                scaledRect.right = (localRect.right / scaleValue).toInt()
-                scaledRect.bottom = (localRect.bottom / scaleValue).toInt()
+                disPlayRect.left = (localRect.left / scaleValue).toInt()
+                disPlayRect.top = (localRect.top / scaleValue).toInt()
+                disPlayRect.right = (localRect.right / scaleValue).toInt()
+                disPlayRect.bottom = (localRect.bottom / scaleValue).toInt()
 
-                val l = scaledRect.left + left
-                val t = scaledRect.top + top
-                val r = scaledRect.right - scaledRect.left - left
-                val b = scaledRect.bottom - scaledRect.top - top
+                val l = disPlayRect.left - left
+                val t = disPlayRect.top - top
+                val r = disPlayRect.right - right
+                val b = disPlayRect.bottom - bottom
                 sampleRect.set(
                     (l * srcScaledW).toInt(),
                     (t * srcScaledH).toInt(),
                     (r * srcScaledW).toInt(),
                     (b * srcScaledH).toInt()
                 )
+                if (disPlayRect.left < imageOriginalRect.left) {
+                    sampleRect.left = 0
+                    sampleRect.right = decoder.width
+                    disPlayRect.left = imageOriginalRect.left
+                }
+                if (disPlayRect.right > imageOriginalRect.right) {
+                    sampleRect.right = (decoder.width - disPlayRect.left * srcScaledW).toInt()
+                    disPlayRect.right = imageOriginalRect.right
+                }
+                if (disPlayRect.top < imageOriginalRect.top) {
+                    sampleRect.top = 0
+                    sampleRect.bottom = decoder.height
+                    disPlayRect.top = imageOriginalRect.top
+                }
+                if (disPlayRect.bottom > imageOriginalRect.bottom) {
+                    sampleRect.bottom = (decoder.height - disPlayRect.top * srcScaledW).toInt()
+                    disPlayRect.bottom = imageOriginalRect.bottom
+                }
             }
 
-            canvas?.drawRect(scaledRect, Paint().apply {
-                color = Color.RED
-                strokeWidth = 5f
-                style = Paint.Style.STROKE
-                isAntiAlias = true
-                isDither = true
-                strokeJoin = Paint.Join.ROUND
-                strokeCap = Paint.Cap.ROUND
-            })
+            //draw test rect
+//            canvas?.drawRect(scaledRect, Paint().apply {
+//                color = Color.RED
+//                strokeWidth = 5f
+//                style = Paint.Style.STROKE
+//                isAntiAlias = true
+//                isDither = true
+//                strokeJoin = Paint.Join.ROUND
+//                strokeCap = Paint.Cap.ROUND
+//            })
 
             try {
                 decoder.decodeRegion(sampleRect, options)
             } catch (_: IllegalArgumentException) {
                 null
             }?.let {
-                canvas?.drawBitmap(it, null, scaledRect, bitmapPaint)
+                canvas?.drawBitmap(it, null, disPlayRect, bitmapPaint)
             }
         }
 
     }
 
     fun release() {
+        if (fullImage?.isRecycled == true) {
+            fullImage?.recycle()
+            fullImage = null
+        }
         bitmapRegionDecoder?.recycle()
         bitmapRegionDecoder = null
     }
