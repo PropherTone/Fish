@@ -1,5 +1,7 @@
 package com.protone.layout.view.imageRegionLoadingView
 
+import android.animation.AnimatorSet
+import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
@@ -15,6 +17,8 @@ import com.protone.common.utils.TAG
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
+import kotlin.math.abs
+import kotlin.math.roundToInt
 
 class ImageRegionLoadingView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null
@@ -24,8 +28,33 @@ class ImageRegionLoadingView @JvmOverloads constructor(
 
     private var widthMode = MeasureSpec.EXACTLY
     private var heightMode = MeasureSpec.EXACTLY
+    private val originalRect by lazy { Rect() }
+
+    var doDragOut = false
+    private var canDragOut = false
+    private var onSingleTap: (() -> Unit)? = null
+    private var onDragOut: (() -> Unit)? = null
+    fun setOnSingleTap(onSingleTapConfirmed: () -> Unit) {
+        this.onSingleTap = onSingleTapConfirmed
+    }
+
+    fun setOnDragOut(onDragOut: () -> Unit) {
+        this.onDragOut = onDragOut
+    }
 
     private val gestureHandler by lazy {
+        val rect = Rect()
+        fun resetAni() {
+            val alphaAni =
+                ObjectAnimator.ofFloat(this@ImageRegionLoadingView, "alpha", alpha, 1f)
+            val scrollXAni =
+                ObjectAnimator.ofInt(this@ImageRegionLoadingView, "ScrollX", scrollX, 0)
+            val scrollYAni =
+                ObjectAnimator.ofInt(this@ImageRegionLoadingView, "ScrollY", scrollY, 0)
+            AnimatorSet().apply {
+                playTogether(scrollXAni, scrollYAni, alphaAni)
+            }.start()
+        }
         GestureHandler(context) { gesture ->
             setOnScale { _, _ ->
                 invalidate()
@@ -50,41 +79,87 @@ class ImageRegionLoadingView @JvmOverloads constructor(
                 Log.d(TAG, "onShowPressed ")
             }
             onSingleTapConfirmed {
-                Log.d(TAG, "onSingleTapConfirmed ")
+                this@ImageRegionLoadingView.onSingleTap?.invoke()
                 true
             }
             doFling {
                 scaleX > 1f
             }
+            onFingerUp {
+                if (doDragOut && canDragOut) {
+                    this@ImageRegionLoadingView.onDragOut?.invoke()
+                } else {
+                    if (scaleX <= 1f) {
+                        resetAni()
+                    } else {
+                        getLocalVisibleRect(rect)
+                        val right = rect.right / scaleX
+                        if (right > originalRect.right) {
+                            ObjectAnimator.ofInt(this@ImageRegionLoadingView, "ScrollX", scrollX, right.roundToInt() - originalRect.right).start()
+                        }
+//                        val scrollXAni =
+//                            ObjectAnimator.ofInt(this@ImageRegionLoadingView, "ScrollX", scrollX, 0)
+//                        val scrollYAni =
+//                            ObjectAnimator.ofInt(this@ImageRegionLoadingView, "ScrollY", scrollY, 0)
+//                        AnimatorSet().apply {
+//                            playTogether(scrollXAni, scrollYAni)
+//                        }.start()
+                    }
+                }
+            }
         }.setOnFlyingEvent(object : OnScrollEvent {
             override fun getStartX(): Int = scrollX
             override fun getStartY(): Int = scrollY
 
-            private var lastScrollX = scrollX
-            private var rect = Rect()
+            private var scrollXValue = -1f
+            private var scrollYValue = -1f
             override fun calculateScrollX(scrollValue: Float) {
+                scrollXValue = abs(scrollValue)
+//                if (scaleX <= 1f) return
                 //scrollValue > 0 右滑
+                Log.d(TAG, "calculateScrollX>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
                 Log.d(TAG, "calculateScrollX:scrollValue $scrollValue")
                 getLocalVisibleRect(rect)
                 Log.d(TAG, "calculateScrollX:local $rect")
                 Log.d(TAG, "calculateScrollX:scrollX $scrollX")
                 Log.d(TAG, "calculateScrollX:pivotX $pivotX")
                 Log.d(TAG, "calculateScrollX:scaleX $scaleX")
-                //(next rect.left) =(last rect.left) - scaleX * ((next scrollX) - (last scrollX))
-                var distance = scaleX * (scrollX - lastScrollX)
+                //(next rect.left) =(last rect.left) + scaleX * ((next scrollX) - (last scrollX))
+                var nextRectLeft = rect.left + (scaleX * (scrollX + scrollValue - scrollX))
+                Log.d(TAG, "calculateScrollX:nextRectLeft $nextRectLeft")
                 scrollX += scrollValue.toInt()
             }
 
             override fun calculateScrollY(scrollValue: Float) {
+                scrollYValue = abs(scrollValue)
+                getLocalVisibleRect(rect)
+                if (scaleY <= 1f) {
+                    val topBorder = regionDecoder?.getImageMarginTop()?.plus(abs(rect.top)) ?: -1
+                    val half = measuredHeight / 2
+                    alpha = 1f - (topBorder / half.toFloat()) / 2f
+                    canDragOut = topBorder > half
+                }
                 scrollY += scrollValue.toInt()
             }
 
             override fun onScrollReady(): Boolean {
-                return true
+                if (scaleX > 1f) return true
+                return if (scrollXValue > scrollYValue) {
+                    parent.requestDisallowInterceptTouchEvent(false)
+                    getLocalVisibleRect(rect)
+                    resetAni()
+                    false
+                } else {
+                    true
+                }
             }
 
             override fun onFlingReady() {
                 computeScroll()
+            }
+
+            override fun onScrollFinished() {
+                invalidate()
             }
 
         })
@@ -145,6 +220,11 @@ class ImageRegionLoadingView @JvmOverloads constructor(
     }
 
     private val localRect by lazy { Rect() }
+
+    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+        super.onSizeChanged(w, h, oldw, oldh)
+        getLocalVisibleRect(originalRect)
+    }
 
     override fun onDrawForeground(canvas: Canvas?) {
         if (regionDecoder == null) {

@@ -138,6 +138,14 @@ class RegionDecoder(
 
     }
 
+    fun getImageMarginTop() = imageOriginalRect.top
+
+    fun getImageMarginBottom() = imageOriginalRect.top
+
+    fun getImageMarginLeft() = imageOriginalRect.left
+
+    fun getImageMarginRight() = imageOriginalRect.left
+
     fun release() {
         if (fullImage?.isRecycled == true) {
             fullImage?.recycle()

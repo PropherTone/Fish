@@ -41,6 +41,7 @@
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:drawableBottom="@drawable/ic_baseline_cloud_download_24"
                 android:src="@drawable/ic_baseline_invert_colors_24"
                 app:layout_constraintEnd_toEndOf="@+id/textView"
                 app:layout_constraintStart_toStartOf="@+id/textView"

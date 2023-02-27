@@ -14,4 +14,5 @@ interface OnScrollEvent {
 
     fun onScrollReady(): Boolean
     fun onFlingReady()
+    fun onScrollFinished()
 }

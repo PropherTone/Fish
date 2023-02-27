@@ -1,10 +1,13 @@
 package com.protone.layout.view.imageRegionLoadingView
 
 import android.content.Context
+import android.util.Log
+import android.view.Choreographer
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
 import android.widget.OverScroller
+import com.protone.common.utils.TAG
 import kotlin.math.sqrt
 
 class GestureHandler(
@@ -17,7 +20,6 @@ class GestureHandler(
     @Volatile
     private var onGestureEventEnd = true
     fun isGestureEventEnd() = onGestureEventEnd
-    private var isFingerUp = true
 
     init {
         onGesture?.invoke(onGestureEvent, this)
@@ -81,6 +83,12 @@ class GestureHandler(
     private val gestureDetector = GestureDetector(context, this)
     private val overScroller = OverScroller(context, FlingInterpolator())
 
+    private val frameCallback = Choreographer.FrameCallback {
+        Log.d(TAG, "frameCallback")
+        onGestureEventEnd = true
+        onScrollEvent?.onScrollFinished()
+    }
+
     //缩放相关
     companion object {
         const val SCALE_MAX = 5.0f
@@ -137,9 +145,9 @@ class GestureHandler(
         distanceY: Float
     ): Boolean {
         return onScrollEvent?.let {
-            onGestureEventEnd = false
             it.calculateScrollX(distanceX)
             it.calculateScrollY(distanceY)
+            postScrollFinished()
             it.onScrollReady()
         } == true
     }
@@ -152,7 +160,7 @@ class GestureHandler(
     ): Boolean {
         return onScrollEvent?.let {
             if (doFling?.invoke() == false) return false
-            onGestureEventEnd = false
+            Choreographer.getInstance().removeFrameCallback(frameCallback)
             overScroller.fling(
                 it.getStartX(),
                 it.getStartY(),
@@ -172,7 +180,6 @@ class GestureHandler(
         val fingerCounts = ev?.pointerCount
         when (ev?.action?.and(MotionEvent.ACTION_MASK)) {
             MotionEvent.ACTION_DOWN -> {
-                isFingerUp = false
                 overScroller.forceFinished(true)
                 if (doScaleRequest.invoke())
                     view.parent.requestDisallowInterceptTouchEvent(true)
@@ -181,8 +188,6 @@ class GestureHandler(
                 clkX = ev.x
                 clkY = ev.y
                 view.parent.requestDisallowInterceptTouchEvent(false)
-                isFingerUp = true
-                onGestureEventEnd = true
                 onFingerUp?.invoke()
             }
             MotionEvent.ACTION_POINTER_UP -> {
@@ -238,16 +243,13 @@ class GestureHandler(
     }
 
     fun computeScroll(view: View): Boolean {
-        if (!isFingerUp) return false
-        return (if (overScroller.computeScrollOffset()) {
-            onGestureEventEnd = false
+        return if (overScroller.computeScrollOffset()) {
             view.scrollY = overScroller.currY
             view.scrollX = overScroller.currX
             view.postInvalidate()
+            postScrollFinished()
             true
-        } else false).also {
-            onGestureEventEnd = !it && overScroller.isFinished
-        }
+        } else false
     }
 
     fun performZoom(view: View, duration: Long) {
@@ -255,8 +257,6 @@ class GestureHandler(
         view.pivotY = clkY
         val scale = when (zoomIn) {
             0 -> {
-                view.pivotX = 0f
-                view.pivotY = 0f
                 zoomIn++
                 SCALE_MID
             }
@@ -265,6 +265,8 @@ class GestureHandler(
                 SCALE_MAX
             }
             else -> {
+                view.pivotX = 0f
+                view.pivotY = 0f
                 zoomIn = 0
                 SCALE_MIN
             }
@@ -273,9 +275,19 @@ class GestureHandler(
             .setUpdateListener {
                 onGestureEventEnd = false
             }.withEndAction {
+                if (zoomIn == 0) {
+                    view.scrollX = 0
+                    view.scrollY = 0
+                }
                 onGestureEventEnd = true
-                view.postInvalidate()
+                postScrollFinished()
             }.start()
+    }
+
+    private fun postScrollFinished() {
+        onGestureEventEnd = false
+        Choreographer.getInstance().removeFrameCallback(frameCallback)
+        Choreographer.getInstance().postFrameCallbackDelayed(frameCallback,100L)
     }
 
     private fun View.setPivot(x: Float, y: Float) {

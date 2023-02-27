@@ -8,6 +8,7 @@ import android.util.Log
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isGone
 import androidx.recyclerview.widget.GridLayoutManager
 import com.alibaba.android.arouter.launcher.ARouter
 import com.protone.common.baseType.bufferCollect
@@ -34,6 +35,10 @@ class LayoutGuideActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
 //        val intent = Intent(Intent.ACTION_PICK, null)
 //        intent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*")
+        binding.image.doDragOut = true
+        binding.image.setOnDragOut {
+            binding.image.isGone = true
+        }
         registerForActivityResult(ActivityResultContracts.OpenDocument()) {
             it?.let { uri ->
                 Log.d(TAG, "onCreate: $uri")
