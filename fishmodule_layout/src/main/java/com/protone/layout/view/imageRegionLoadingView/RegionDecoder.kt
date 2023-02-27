@@ -77,7 +77,7 @@ class RegionDecoder(
                 scaledW,
                 scaledH
             )
-            if (options.inSampleSize <= 1) return
+//            if (options.inSampleSize <= 1) return
 
             imageOriginalRect.apply {
 
@@ -117,15 +117,15 @@ class RegionDecoder(
             }
 
             //draw test rect
-//            canvas?.drawRect(scaledRect, Paint().apply {
-//                color = Color.RED
-//                strokeWidth = 5f
-//                style = Paint.Style.STROKE
-//                isAntiAlias = true
-//                isDither = true
-//                strokeJoin = Paint.Join.ROUND
-//                strokeCap = Paint.Cap.ROUND
-//            })
+            canvas?.drawRect(disPlayRect, Paint().apply {
+                color = Color.RED
+                strokeWidth = 5f
+                style = Paint.Style.STROKE
+                isAntiAlias = true
+                isDither = true
+                strokeJoin = Paint.Join.ROUND
+                strokeCap = Paint.Cap.ROUND
+            })
 
             try {
                 decoder.decodeRegion(sampleRect, options)

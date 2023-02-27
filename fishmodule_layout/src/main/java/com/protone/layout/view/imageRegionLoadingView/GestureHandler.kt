@@ -1,23 +1,26 @@
 package com.protone.layout.view.imageRegionLoadingView
 
+import android.content.Context
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
 import android.widget.OverScroller
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 import kotlin.math.sqrt
 
 class GestureHandler(
-    private val view: View,
-    private val coroutineScope: CoroutineScope,
-    onGesture: (OnGestureEvent.() -> Unit)? = null
+    context: Context,
+    onGesture: (OnGestureEvent.(GestureHandler) -> Unit)? = null
 ) : GestureDetector.SimpleOnGestureListener() {
 
     private val onGestureEvent by lazy { OnGestureEvent() }
 
+    @Volatile
+    private var onGestureEventEnd = true
+    fun isGestureEventEnd() = onGestureEventEnd
+    private var isFingerUp = true
+
     init {
-        onGesture?.invoke(onGestureEvent)
+        onGesture?.invoke(onGestureEvent, this)
     }
 
     private var onFingerUp: (() -> Unit)? = null
@@ -28,17 +31,16 @@ class GestureHandler(
     private var onLongPressed: ((MotionEvent?) -> Unit)? = null
     private var onSingleTapConfirmed: ((MotionEvent?) -> Boolean)? = null
     private var onDoubleTap: ((MotionEvent?) -> Boolean)? = null
-    private var onScroll: (() -> Boolean)? = null
     private var doFling: (() -> Boolean)? = null
-    private var onFlingEvent: OnFlingEvent? = null
-    fun setOnFlyingEvent(onFlingEvent: OnFlingEvent): GestureHandler {
-        this.onFlingEvent = onFlingEvent
+    private var onScrollEvent: OnScrollEvent? = null
+    fun setOnFlyingEvent(onScrollEvent: OnScrollEvent): GestureHandler {
+        this.onScrollEvent = onScrollEvent
         return this
     }
 
     inner class OnGestureEvent {
 
-        fun setOnFingerUp(onFingerUp: () -> Unit) {
+        fun onFingerUp(onFingerUp: () -> Unit) {
             this@GestureHandler.onFingerUp = onFingerUp
         }
 
@@ -70,18 +72,14 @@ class GestureHandler(
             this@GestureHandler.onDoubleTap = onDoubleTap
         }
 
-        fun onScroll(onScroll: () -> Boolean) {
-            this@GestureHandler.onScroll = onScroll
-        }
-
-        fun onFling(onFling: () -> Boolean) {
+        fun doFling(onFling: () -> Boolean) {
             this@GestureHandler.doFling = onFling
         }
 
     }
 
-    private val gestureDetector = GestureDetector(view.context, this)
-    private val overScroller = OverScroller(view.context, FlingInterpolator())
+    private val gestureDetector = GestureDetector(context, this)
+    private val overScroller = OverScroller(context, FlingInterpolator())
 
     //缩放相关
     companion object {
@@ -99,10 +97,83 @@ class GestureHandler(
     private var clkY = 0f
     private var zoomIn = 0
 
-    fun handleTouchEvent(ev: MotionEvent?): Boolean {
+    override fun onDown(e: MotionEvent?): Boolean {
+        onGestureEventEnd = false
+        return onDown?.invoke(e) == true
+    }
+
+    override fun onShowPress(e: MotionEvent?) {
+        onShowPressed?.invoke(e)
+    }
+
+    override fun onSingleTapUp(e: MotionEvent?): Boolean {
+        return false
+    }
+
+    override fun onLongPress(e: MotionEvent?) {
+        onLongPressed?.invoke(e)
+    }
+
+    override fun onSingleTapConfirmed(e: MotionEvent?): Boolean {
+        return onSingleTapConfirmed?.invoke(e) == true
+    }
+
+    override fun onDoubleTap(e: MotionEvent?): Boolean {
+        return onDoubleTap?.invoke(e) == true
+    }
+
+    override fun onDoubleTapEvent(e: MotionEvent?): Boolean {
+        return super.onDoubleTapEvent(e)
+    }
+
+    override fun onContextClick(e: MotionEvent?): Boolean {
+        return super.onContextClick(e)
+    }
+
+    override fun onScroll(
+        e1: MotionEvent?,
+        e2: MotionEvent?,
+        distanceX: Float,
+        distanceY: Float
+    ): Boolean {
+        return onScrollEvent?.let {
+            onGestureEventEnd = false
+            it.calculateScrollX(distanceX)
+            it.calculateScrollY(distanceY)
+            it.onScrollReady()
+        } == true
+    }
+
+    override fun onFling(
+        e1: MotionEvent?,
+        e2: MotionEvent?,
+        velocityX: Float,
+        velocityY: Float
+    ): Boolean {
+        return onScrollEvent?.let {
+            if (doFling?.invoke() == false) return false
+            onGestureEventEnd = false
+            overScroller.fling(
+                it.getStartX(),
+                it.getStartY(),
+                -velocityX.toInt(),
+                -velocityY.toInt(),
+                it.calculateLeftBorder(),
+                it.calculateRightBorder(),
+                it.calculateTopBorder(),
+                it.calculateBottomBorder()
+            )
+            it.onFlingReady()
+            true
+        } == true
+    }
+
+    fun handleTouchEvent(view: View, ev: MotionEvent?): Boolean {
         val fingerCounts = ev?.pointerCount
         when (ev?.action?.and(MotionEvent.ACTION_MASK)) {
             MotionEvent.ACTION_DOWN -> {
+                isFingerUp = false
+                overScroller.forceFinished(true)
                 if (doScaleRequest.invoke())
                     view.parent.requestDisallowInterceptTouchEvent(true)
             }
@@ -110,6 +181,8 @@ class GestureHandler(
                 clkX = ev.x
                 clkY = ev.y
                 view.parent.requestDisallowInterceptTouchEvent(false)
+                isFingerUp = true
+                onGestureEventEnd = true
                 onFingerUp?.invoke()
             }
             MotionEvent.ACTION_POINTER_UP -> {
@@ -148,6 +221,7 @@ class GestureHandler(
                 }
             }
             MotionEvent.ACTION_POINTER_DOWN -> {
+                overScroller.forceFinished(true)
                 clkX = ev.x
                 clkY = ev.y
                 if (fingerCounts == 2) {
@@ -161,6 +235,47 @@ class GestureHandler(
             }
         }
         return gestureDetector.onTouchEvent(ev)
+    }
+
+    fun computeScroll(view: View): Boolean {
+        if (!isFingerUp) return false
+        return (if (overScroller.computeScrollOffset()) {
+            onGestureEventEnd = false
+            view.scrollY = overScroller.currY
+            view.scrollX = overScroller.currX
+            view.postInvalidate()
+            true
+        } else false).also {
+            onGestureEventEnd = !it && overScroller.isFinished
+        }
+    }
+
+    fun performZoom(view: View, duration: Long) {
+        view.pivotX = clkX
+        view.pivotY = clkY
+        val scale = when (zoomIn) {
+            0 -> {
+                view.pivotX = 0f
+                view.pivotY = 0f
+                zoomIn++
+                SCALE_MID
+            }
+            1 -> {
+                zoomIn++
+                SCALE_MAX
+            }
+            else -> {
+                zoomIn = 0
+                SCALE_MIN
+            }
+        }
+        view.animate().scaleX(scale).scaleY(scale).setDuration(duration)
+            .setUpdateListener {
+                onGestureEventEnd = false
+            }.withEndAction {
+                onGestureEventEnd = true
+                view.postInvalidate()
+            }.start()
     }
 
     private fun View.setPivot(x: Float, y: Float) {
@@ -207,78 +322,5 @@ class GestureHandler(
         } else {
             0.0
         }
-    }
-
-    override fun onDown(e: MotionEvent?): Boolean {
-        return onDown?.invoke(e) == true
-    }
-
-    override fun onShowPress(e: MotionEvent?) {
-        onShowPressed?.invoke(e)
-    }
-
-    override fun onSingleTapUp(e: MotionEvent?): Boolean {
-        return false
-    }
-
-    override fun onLongPress(e: MotionEvent?) {
-        onLongPressed?.invoke(e)
-    }
-
-    override fun onSingleTapConfirmed(e: MotionEvent?): Boolean {
-        return onSingleTapConfirmed?.invoke(e) == true
-    }
-
-    override fun onDoubleTap(e: MotionEvent?): Boolean {
-        return onDoubleTap?.invoke(e) == true
-    }
-
-    override fun onDoubleTapEvent(e: MotionEvent?): Boolean {
-        return super.onDoubleTapEvent(e)
-    }
-
-    override fun onContextClick(e: MotionEvent?): Boolean {
-        return super.onContextClick(e)
-    }
-
-    override fun onScroll(
-        e1: MotionEvent?,
-        e2: MotionEvent?,
-        distanceX: Float,
-        distanceY: Float
-    ): Boolean {
-        return onFlingEvent?.let {
-            it.calculateScrollHorizontally(distanceX)
-            it.calculateScrollVertically(distanceY)
-            onScroll?.invoke() ?: true
-        } == true
-    }
-
-    override fun onFling(
-        e1: MotionEvent?,
-        e2: MotionEvent?,
-        velocityX: Float,
-        velocityY: Float
-    ): Boolean {
-        return onFlingEvent?.let {
-            if (doFling?.invoke() == false) return false
-            coroutineScope.launch {
-                overScroller.fling(
-                    view.scrollX,
-                    view.scrollY,
-                    -velocityX.toInt(),
-                    -velocityY.toInt(),
-                    Int.MIN_VALUE,
-                    Int.MAX_VALUE,
-                    Int.MIN_VALUE,
-                    Int.MAX_VALUE
-                )
-                while (overScroller.computeScrollOffset()) {
-                    it.calculateScrollHorizontally(overScroller.currX.toFloat() - view.scrollX)
-                    it.calculateScrollVertically(overScroller.currY.toFloat() - view.scrollY)
-                }
-            }
-            true
-        } == true
     }
 }
